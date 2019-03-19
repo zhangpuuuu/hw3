@@ -1,0 +1,137 @@
+附录：
+
+1.直方图绘制与直方图均衡：
+clc;clear;close all;
+I=imread('citywall.bmp');     
+subplot(1,2,1);
+imshow(I)
+title('原始图像')
+subplot(1,2,2)
+imhist(I);
+title('直方图')
+J=histeq(I);
+figure;
+subplot(1,2,1)
+imshow(J)
+title('直方图均衡化')
+subplot(1,2,2)
+imhist(J)
+title('直方图')
+
+
+
+2.直方图匹配：
+clear all;
+close all;
+clc;
+ 
+r=127;                              
+x=-r:r+1;
+sigma=20;
+y1=exp(-((x-80).^2)/(2*sigma^2));
+y2=exp(-((x+80).^2)/(2*sigma^2));
+y=y1+y2;                       
+y=y/sum(y);         
+plot(y);           
+ 
+G=[];               
+for i=1:256
+   G=[G sum(y(1:i))]; 
+end
+ 
+img=imread('citywall.bmp');
+[m n]=size(img);
+hist=imhist(img);      
+p=hist/(m*n);           
+figure;plot(p)          
+ 
+s=[];                  
+for i=1:256
+    s=[s sum(p(1:i))];
+end
+ 
+for i=1:256
+    tmp{i}=G-s(i);
+    tmp{i}=abs(tmp{i});        
+    [a index(i)]=min(tmp{i});  
+end
+ 
+imgn=zeros(m,n);
+for i=1:m
+   for j=1:n
+      imgn(i,j)=index(img(i,j)+1)-1;   
+   end
+end
+ 
+imgn=uint8(imgn);
+figure;imshow(imgn)
+figure;plot(imhist(imgn))      
+
+3.局部直方图增强
+Igray=imread('lena.bmp');
+%=rgb2gray(a);
+k0=0.3;
+k1=0.01;
+E=4;
+masksize = 7; 
+exsize = floor(masksize/2); 、
+Iex = padarray(Igray, [exsize exsize], 'replicate', 'both'); 、
+Is = zeros(size(Igray)); 、
+for i = 1:size(Igray, 1)
+for j = 1:size(Igray, 2)
+subdomain = Iex(i:i+2*exsize, j:j+2*exsize);
+localmean = sum(subdomain(:))/masksize^2;
+Is(i, j) = sqrt(sum((subdomain(:)-localmean).^2))/masksize;
+end
+end
+meanIm = mean(Igray(:));
+minIm = min(Igray(:));
+meanIs = mean(Is(:));
+maxIs = max(Is(:));
+Im1 = Igray<(minIm+k0*(meanIm-minIm)); 
+Is1 = Is>(meanIs + k1*(maxIs-meanIs)); 
+s = strel('disk',8); 
+Is1 = imclose(Is1, s);
+Ibw = Im1 & Is1;
+figure(1)
+imshow(Ibw);title('增强图像的放大图像');
+Ibw2=Ibw.*(E-1)+1;
+for i = 1:size(Igray, 1)
+for j = 1:size(Igray, 2)
+P(i,j)=Ibw2(i,j).*Igray(i,j);
+end
+end
+figure(2)
+imshow(P);title('增强的SME图像');
+figure(3)
+imshow(Igray);title('局部增强原始图像');
+
+4.直方图分割
+clear
+I=imread('lena.bmp');
+figure(1);
+imhist(I);
+title('womanμ??±??í?');
+figure(2);
+subplot(1,2,1);
+imshow(I);
+title('?-í?');
+t1=80;
+[m,n]=size(I);
+I1=zeros(m,n);
+for i=1:m;
+    for j=1:n;
+         if I(i,j)>t1;
+             I1(i,j)=1;
+         else
+              I1(i,j)=0;
+         end
+    end
+end
+subplot(1,2,2);
+imshow(I1);
+title('????oó');
+clc
+clearall
+I=imread('lena.bmp');
+         
